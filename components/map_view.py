@@ -28,7 +28,12 @@ _PULSE_RINGS = [
 ]
 
 
-def render_deployment_map() -> go.Figure:
+def render_deployment_map(
+    lat: float = DOI_INTHANON_LAT,
+    lon: float = DOI_INTHANON_LON,
+    label: str = "HYDRA Alpha Station",
+    altitude: int = 2565,
+) -> go.Figure:
     """Return a dark-themed Mapbox figure with a pulsing HYDRA marker."""
 
     # Outer-to-inner glow rings (rendered first = behind)
@@ -36,8 +41,8 @@ def render_deployment_map() -> go.Figure:
     for size, opacity in _PULSE_RINGS:
         traces.append(
             go.Scattermapbox(
-                lat=[DOI_INTHANON_LAT],
-                lon=[DOI_INTHANON_LON],
+                lat=[lat],
+                lon=[lon],
                 mode="markers",
                 marker=dict(size=size, color=NEON_CYAN, opacity=opacity),
                 hoverinfo="skip",
@@ -48,18 +53,18 @@ def render_deployment_map() -> go.Figure:
     # Core marker with label
     traces.append(
         go.Scattermapbox(
-            lat=[DOI_INTHANON_LAT],
-            lon=[DOI_INTHANON_LON],
+            lat=[lat],
+            lon=[lon],
             mode="markers+text",
             marker=dict(size=13, color=NEON_CYAN, opacity=0.95),
-            text=["HYDRA Alpha Station"],
+            text=[label],
             textfont=dict(color=NEON_CYAN, size=11),
             textposition="top center",
             hovertemplate=(
-                "<b>HYDRA Alpha Station</b><br>"
-                "Lat: 18.5883°N<br>"
-                "Lon: 98.4861°E<br>"
-                "Alt: 2,565 m<extra></extra>"
+                f"<b>{label}</b><br>"
+                f"Lat: {lat:.4f}°N<br>"
+                f"Lon: {lon:.4f}°E<br>"
+                f"Alt: {altitude:,} m<extra></extra>"
             ),
             showlegend=False,
         )
@@ -69,7 +74,7 @@ def render_deployment_map() -> go.Figure:
     fig.update_layout(
         mapbox=dict(
             style="carto-darkmatter",
-            center=dict(lat=DOI_INTHANON_LAT, lon=DOI_INTHANON_LON),
+            center=dict(lat=lat, lon=lon),
             zoom=10,
         ),
         paper_bgcolor="rgba(0,0,0,0)",

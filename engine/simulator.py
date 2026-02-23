@@ -12,18 +12,56 @@ from __future__ import annotations
 
 import math
 import random
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
 from core.models import AegisState, HeliosState, HydraState, SentinelState
 
 
+@dataclass(frozen=True)
+class StationConfig:
+    """Configuration for a HYDRA deployment station."""
+    name: str
+    seed: int
+    lat: float
+    lon: float
+    altitude_m: int
+    irradiance_base: float = 700.0
+    membrane_base: float = 85.0
+
+
+STATIONS: dict[str, StationConfig] = {
+    "Doi Inthanon": StationConfig(
+        name="Doi Inthanon", seed=42,
+        lat=18.5883, lon=98.4861, altitude_m=2565,
+    ),
+    "Chiang Rai": StationConfig(
+        name="Chiang Rai", seed=137,
+        lat=19.9105, lon=99.8406, altitude_m=580,
+        irradiance_base=750.0, membrane_base=82.0,
+    ),
+    "Nan": StationConfig(
+        name="Nan", seed=256,
+        lat=18.7756, lon=100.7730, altitude_m=240,
+        irradiance_base=680.0, membrane_base=88.0,
+    ),
+}
+
+
 class HydraSimulator:
     """Produces one ``HydraState`` per ``step()`` call."""
 
-    def __init__(self, seed: int = 42) -> None:
-        self._rng = random.Random(seed)
+    def __init__(
+        self,
+        seed: int = 42,
+        config: Optional[StationConfig] = None,
+    ) -> None:
+        self._config = config
+        self._rng = random.Random(config.seed if config else seed)
         self._tick = 0
+        self._irr_base = config.irradiance_base if config else 700.0
+        self._mem_base = config.membrane_base if config else 85.0
 
     def step(self) -> HydraState:
         self._tick += 1
@@ -40,7 +78,7 @@ class HydraSimulator:
 
     def _helios(self, t: int, ts: datetime) -> HeliosState:
         # Day / night cycle — period ≈ 120 ticks
-        irradiance = 700.0 + 500.0 * math.sin(2.0 * math.pi * t / 120.0)
+        irradiance = self._irr_base + 500.0 * math.sin(2.0 * math.pi * t / 120.0)
         irradiance += self._rng.gauss(0.0, 20.0)
         irradiance = max(0.0, irradiance)
 
@@ -57,7 +95,7 @@ class HydraSimulator:
 
     def _aegis(self, t: int, ts: datetime) -> AegisState:
         # Slow maintenance cycle — period ≈ 300 ticks
-        membrane = 85.0 + 10.0 * math.sin(2.0 * math.pi * t / 300.0)
+        membrane = self._mem_base + 10.0 * math.sin(2.0 * math.pi * t / 300.0)
         membrane += self._rng.gauss(0.0, 1.0)
 
         biofouling = 100.0 - membrane + self._rng.gauss(0.0, 2.0)

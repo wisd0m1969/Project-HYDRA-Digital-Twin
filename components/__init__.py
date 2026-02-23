@@ -6,7 +6,15 @@ Every function here is a pure renderer:
 No session state mutations.  No side effects.
 """
 
-from .charts import render_aegis_chart, render_gauge, render_helios_chart, render_sensor_chart
+from .charts import (
+    render_aegis_chart,
+    render_anomaly_timeline,
+    render_gauge,
+    render_helios_chart,
+    render_sensor_chart,
+    render_sparkline,
+    render_wqi_gauge,
+)
 from .map_view import render_deployment_map
 from .terminal import render_graphrag_log
 
@@ -15,6 +23,9 @@ __all__ = [
     "render_helios_chart",
     "render_aegis_chart",
     "render_sensor_chart",
+    "render_wqi_gauge",
+    "render_sparkline",
+    "render_anomaly_timeline",
     "render_deployment_map",
     "render_graphrag_log",
 ]

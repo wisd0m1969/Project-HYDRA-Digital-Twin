@@ -129,3 +129,45 @@ class GraphRAGEngine:
             )
 
         return lines
+
+    @staticmethod
+    def detect_anomalies(state: HydraState) -> list[tuple]:
+        """Extract structured anomaly events from a HydraState.
+
+        Returns list of ``(tick, type_str, severity)`` tuples.
+        Severity: 1=warn, 2=alert, 3=critical.
+        """
+        events: list[tuple] = []
+        tick = state.tick
+
+        irr = state.helios.solar_irradiance_wm2
+        if irr < 200:
+            events.append((tick, "Low Irradiance", 1))
+
+        bio = state.aegis.biofouling_risk_pct
+        if bio > 25:
+            sev = 3 if bio > 40 else 2
+            events.append((tick, "Biofouling", sev))
+
+        mem = state.aegis.membrane_integrity_pct
+        if mem < 80:
+            sev = 3 if mem < 70 else 2
+            events.append((tick, "Membrane Degradation", sev))
+
+        s = state.sentinel
+        if s.ph_level is None:
+            events.append((tick, "pH Sensor Fault", 2))
+        elif s.ph_level < 6.5 or s.ph_level > 8.5:
+            events.append((tick, "pH Anomaly", 2))
+
+        if s.turbidity_ntu is None:
+            events.append((tick, "Turbidity Sensor Fault", 2))
+        elif s.turbidity_ntu > 4.0:
+            events.append((tick, "Turbidity Spike", 2))
+
+        if s.heavy_metal_ppm is None:
+            events.append((tick, "Heavy Metal Sensor Fault", 2))
+        elif s.heavy_metal_ppm > 0.01:
+            events.append((tick, "Heavy Metal Exceedance", 3))
+
+        return events

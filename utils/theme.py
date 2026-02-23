@@ -266,3 +266,55 @@ def metric_card(
         f'{value} <span class="unit">{unit}</span>'
         "</div></div>"
     )
+
+
+def countdown_card(ticks_remaining: object, color: str) -> str:
+    """Maintenance countdown card.
+
+    ``ticks_remaining``: int (ticks until threshold), 0 (now!), or None (nominal).
+    """
+    glow = _hex_to_rgba(color, 0.4)
+    border_hint = _hex_to_rgba(color, 0.12)
+
+    if ticks_remaining is None:
+        return (
+            f'<div class="hydra-metric" style="border-color:{border_hint};">'
+            '<div class="label">MAINTENANCE</div>'
+            f'<div class="value" style="color:{color};text-shadow:0 0 20px {glow};'
+            f'font-size:18px;">NOMINAL</div></div>'
+        )
+    if ticks_remaining == 0:
+        red_glow = _hex_to_rgba("#ff073a", 0.5)
+        return (
+            '<div class="hydra-metric sensor-offline">'
+            '<div class="label">MAINTENANCE</div>'
+            f'<div class="value" style="color:#ff073a;text-shadow:0 0 20px {red_glow};'
+            'font-size:14px;letter-spacing:2px;">MAINTENANCE NOW</div></div>'
+        )
+    return (
+        f'<div class="hydra-metric" style="border-color:{border_hint};">'
+        '<div class="label">MAINTENANCE</div>'
+        f'<div class="value" style="color:{color};text-shadow:0 0 20px {glow};'
+        f'font-size:16px;">~{ticks_remaining} ticks</div></div>'
+    )
+
+
+def summary_card(stats: dict) -> str:
+    """Multi-row session summary card."""
+    rows = []
+    for label, value in stats.items():
+        rows.append(
+            f'<div style="display:flex;justify-content:space-between;'
+            f'padding:3px 0;border-bottom:1px solid #141420;">'
+            f'<span style="color:#505068;font-size:10px;letter-spacing:1px;'
+            f'text-transform:uppercase;">{label}</span>'
+            f'<span style="color:#c0c0c0;font-size:11px;'
+            f'font-family:JetBrains Mono,SF Mono,monospace;">{value}</span>'
+            f'</div>'
+        )
+    return (
+        '<div class="hydra-metric" style="text-align:left;padding:14px 16px;">'
+        '<div class="label" style="margin-bottom:10px;">Session Summary</div>'
+        + "".join(rows)
+        + '</div>'
+    )
