@@ -299,6 +299,117 @@ def countdown_card(ticks_remaining: object, color: str) -> str:
     )
 
 
+def who_badge(status: str, details: list) -> str:
+    """WHO compliance badge HTML.
+
+    ``status``: "PASS", "FAIL", or "PARTIAL".
+    ``details``: list of (parameter, value_str, result) tuples.
+    """
+    colors = {"PASS": "#39ff14", "FAIL": "#ff073a", "PARTIAL": "#ffd700"}
+    icons = {"PASS": "COMPLIANT", "FAIL": "NON-COMPLIANT", "PARTIAL": "PARTIAL"}
+    badge_color = colors.get(status, "#505068")
+    badge_glow = _hex_to_rgba(badge_color, 0.4)
+    badge_border = _hex_to_rgba(badge_color, 0.15)
+
+    detail_rows = []
+    for param, val, result in details:
+        r_color = colors.get(result, "#505068")
+        detail_rows.append(
+            f'<div style="display:flex;justify-content:space-between;'
+            f'padding:2px 0;font-size:10px;">'
+            f'<span style="color:#505068;">{param}</span>'
+            f'<span style="color:{r_color};font-weight:600;">{val} {result}</span>'
+            f'</div>'
+        )
+
+    return (
+        f'<div class="hydra-metric" style="border-color:{badge_border};padding:12px 14px;">'
+        f'<div class="label" style="margin-bottom:4px;">WHO Guidelines</div>'
+        f'<div class="value" style="color:{badge_color};text-shadow:0 0 16px {badge_glow};'
+        f'font-size:16px;letter-spacing:2px;">{icons.get(status, status)}</div>'
+        f'<div style="margin-top:8px;">{"".join(detail_rows)}</div>'
+        f'</div>'
+    )
+
+
+def alert_banner(alerts: list) -> str:
+    """Persistent notification banner for active critical alerts.
+
+    ``alerts``: list of (type_str, severity, count) tuples.
+    Returns empty string if no alerts.
+    """
+    if not alerts:
+        return (
+            '<div style="background:rgba(57,255,20,0.04);border:1px solid rgba(57,255,20,0.15);'
+            'border-radius:8px;padding:8px 16px;margin-bottom:12px;text-align:center;'
+            'font-family:JetBrains Mono,SF Mono,monospace;font-size:11px;color:#39ff14;'
+            'letter-spacing:2px;">ALL SYSTEMS NOMINAL</div>'
+        )
+
+    severity_colors = {1: "#ffd700", 2: "#ff8c00", 3: "#ff073a"}
+    items = []
+    for alert_type, severity, count in alerts:
+        c = severity_colors.get(severity, "#ffd700")
+        items.append(
+            f'<span style="color:{c};font-weight:600;margin:0 8px;">'
+            f'{alert_type} x{count}</span>'
+        )
+
+    max_sev = max(a[1] for a in alerts)
+    border_color = severity_colors.get(max_sev, "#ffd700")
+    bg_color = _hex_to_rgba(border_color, 0.04)
+    border = _hex_to_rgba(border_color, 0.2)
+
+    return (
+        f'<div style="background:{bg_color};border:1px solid {border};'
+        f'border-radius:8px;padding:8px 16px;margin-bottom:12px;text-align:center;'
+        f'font-family:JetBrains Mono,SF Mono,monospace;font-size:11px;">'
+        f'<span style="color:{border_color};letter-spacing:2px;font-weight:700;">'
+        f'ACTIVE ALERTS</span> · {"".join(items)}</div>'
+    )
+
+
+def comparison_table(rows: list, name_a: str, name_b: str) -> str:
+    """HTML table for cross-station comparison.
+
+    ``rows``: list of dicts with keys: metric, name_a, name_b, delta, winner.
+    """
+    header = (
+        '<div style="display:flex;justify-content:space-between;padding:4px 0;'
+        'border-bottom:1px solid #1a1a2e;font-size:9px;color:#353550;'
+        'text-transform:uppercase;letter-spacing:1.5px;">'
+        f'<span style="flex:2;">Metric</span>'
+        f'<span style="flex:1;text-align:right;">{name_a}</span>'
+        f'<span style="flex:1;text-align:right;">{name_b}</span>'
+        f'<span style="flex:1;text-align:right;">Delta</span>'
+        f'</div>'
+    )
+
+    body_rows = []
+    for r in rows:
+        winner = r.get("winner", "")
+        a_style = "color:#39ff14;" if winner == name_a else "color:#c0c0c0;"
+        b_style = "color:#39ff14;" if winner == name_b else "color:#c0c0c0;"
+        body_rows.append(
+            f'<div style="display:flex;justify-content:space-between;padding:3px 0;'
+            f'border-bottom:1px solid #141420;font-size:10px;">'
+            f'<span style="flex:2;color:#505068;">{r["metric"]}</span>'
+            f'<span style="flex:1;text-align:right;{a_style}'
+            f'font-family:JetBrains Mono,monospace;">{r[name_a]}</span>'
+            f'<span style="flex:1;text-align:right;{b_style}'
+            f'font-family:JetBrains Mono,monospace;">{r[name_b]}</span>'
+            f'<span style="flex:1;text-align:right;color:#505068;'
+            f'font-family:JetBrains Mono,monospace;font-size:9px;">{r["delta"]}</span>'
+            f'</div>'
+        )
+
+    return (
+        '<div class="hydra-metric" style="text-align:left;padding:14px 16px;">'
+        '<div class="label" style="margin-bottom:10px;">Cross-Station Comparison</div>'
+        + header + "".join(body_rows) + '</div>'
+    )
+
+
 def summary_card(stats: dict) -> str:
     """Multi-row session summary card."""
     rows = []

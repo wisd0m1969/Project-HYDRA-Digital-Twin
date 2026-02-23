@@ -75,6 +75,33 @@ def membrane_base_from_latitude(lat: float) -> float:
     return 80.0 + 10.0 * (1.0 - 0.3 * math.cos(math.radians(abs(lat))))
 
 
+@dataclass(frozen=True)
+class ClimateProfile:
+    """Regional climate parameters derived from latitude."""
+    zone: str              # Tropical / Arid / Temperate / Cold / Polar
+    noise_factor: float    # Multiplier for Gaussian noise (1.0 = default)
+    fail_rate: float       # Sensor failure probability per tick
+    cycle_period: int      # Day/night cycle period in ticks
+
+
+def climate_from_latitude(lat: float) -> ClimateProfile:
+    """Derive climate profile from absolute latitude.
+
+    Pure function: ``lat → ClimateProfile``.
+    """
+    a = abs(lat)
+    if a < 23.5:
+        return ClimateProfile("Tropical", 1.0, 0.04, 120)
+    elif a < 35.0:
+        return ClimateProfile("Arid", 1.3, 0.03, 130)
+    elif a < 55.0:
+        return ClimateProfile("Temperate", 1.1, 0.02, 150)
+    elif a < 66.5:
+        return ClimateProfile("Cold", 1.4, 0.02, 180)
+    else:
+        return ClimateProfile("Polar", 1.6, 0.05, 240)
+
+
 def build_custom_station(
     lat: float,
     lon: float,
@@ -111,6 +138,8 @@ class HydraSimulator:
         self._tick = 0
         self._irr_base = config.irradiance_base if config else 700.0
         self._mem_base = config.membrane_base if config else 85.0
+        lat = config.lat if config else 18.5883
+        self._climate = climate_from_latitude(lat)
 
     def step(self) -> HydraState:
         self._tick += 1
@@ -126,9 +155,9 @@ class HydraSimulator:
     # ── HELIOS ─────────────────────────────────────────────
 
     def _helios(self, t: int, ts: datetime) -> HeliosState:
-        # Day / night cycle — period ≈ 120 ticks
-        irradiance = self._irr_base + 500.0 * math.sin(2.0 * math.pi * t / 120.0)
-        irradiance += self._rng.gauss(0.0, 20.0)
+        cp = self._climate
+        irradiance = self._irr_base + 500.0 * math.sin(2.0 * math.pi * t / cp.cycle_period)
+        irradiance += self._rng.gauss(0.0, 20.0 * cp.noise_factor)
         irradiance = max(0.0, irradiance)
 
         # Desalination rate tracks irradiance with lag + noise
@@ -143,11 +172,11 @@ class HydraSimulator:
     # ── AEGIS ──────────────────────────────────────────────
 
     def _aegis(self, t: int, ts: datetime) -> AegisState:
-        # Slow maintenance cycle — period ≈ 300 ticks
+        cp = self._climate
         membrane = self._mem_base + 10.0 * math.sin(2.0 * math.pi * t / 300.0)
-        membrane += self._rng.gauss(0.0, 1.0)
+        membrane += self._rng.gauss(0.0, 1.0 * cp.noise_factor)
 
-        biofouling = 100.0 - membrane + self._rng.gauss(0.0, 2.0)
+        biofouling = 100.0 - membrane + self._rng.gauss(0.0, 2.0 * cp.noise_factor)
 
         return AegisState(
             membrane_integrity_pct=membrane,
@@ -159,21 +188,23 @@ class HydraSimulator:
     # ── SENTINEL ───────────────────────────────────────────
 
     def _sentinel(self, t: int, ts: datetime) -> SentinelState:
-        fail = 0.03  # 3 % chance any probe goes offline
+        cp = self._climate
+        fail = cp.fail_rate
+        nf = cp.noise_factor
 
         ph: Optional[float] = 7.0 + 0.5 * math.sin(2.0 * math.pi * t / 80.0)
-        ph += self._rng.gauss(0.0, 0.1)
+        ph += self._rng.gauss(0.0, 0.1 * nf)
         if self._rng.random() < fail:
             ph = None
 
         turb: Optional[float] = 2.0 + 1.5 * math.sin(2.0 * math.pi * t / 150.0)
-        turb += self._rng.gauss(0.0, 0.3)
+        turb += self._rng.gauss(0.0, 0.3 * nf)
         turb = max(0.0, turb)  # NTU cannot be negative
         if self._rng.random() < fail:
             turb = None
 
         metal: Optional[float] = 0.005 + 0.003 * math.sin(2.0 * math.pi * t / 200.0)
-        metal += self._rng.gauss(0.0, 0.001)
+        metal += self._rng.gauss(0.0, 0.001 * nf)
         metal = max(0.0, metal)  # PPM cannot be negative
         if self._rng.random() < fail:
             metal = None

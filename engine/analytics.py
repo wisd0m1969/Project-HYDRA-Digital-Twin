@@ -67,6 +67,103 @@ def compute_wqi(
     return (score, "F", "#ff073a")
 
 
+def check_who_compliance(
+    ph: Optional[float],
+    turbidity: Optional[float],
+    heavy_metal: Optional[float],
+) -> Tuple[str, list[Tuple[str, str, str]]]:
+    """Check WHO drinking water guideline compliance.
+
+    Returns ``(status, details)`` where status is "PASS", "FAIL", or "PARTIAL".
+    Details is a list of ``(parameter, value_str, result)`` tuples.
+    """
+    checks: list[Tuple[str, str, str]] = []
+
+    if ph is not None:
+        ok = 6.5 <= ph <= 8.5
+        checks.append(("pH", f"{ph:.2f}", "PASS" if ok else "FAIL"))
+    else:
+        checks.append(("pH", "N/A", "OFFLINE"))
+
+    if turbidity is not None:
+        ok = turbidity < 1.0
+        checks.append(("Turbidity", f"{turbidity:.2f} NTU", "PASS" if ok else "FAIL"))
+    else:
+        checks.append(("Turbidity", "N/A", "OFFLINE"))
+
+    if heavy_metal is not None:
+        ok = heavy_metal < 0.01
+        checks.append(("Heavy Metal", f"{heavy_metal:.4f} PPM", "PASS" if ok else "FAIL"))
+    else:
+        checks.append(("Heavy Metal", "N/A", "OFFLINE"))
+
+    results = [c[2] for c in checks]
+    if all(r == "PASS" for r in results):
+        status = "PASS"
+    elif any(r == "FAIL" for r in results):
+        status = "FAIL"
+    else:
+        status = "PARTIAL"
+
+    return (status, checks)
+
+
+def compare_stations(
+    hist_a: dict[str, deque],
+    hist_b: dict[str, deque],
+    name_a: str,
+    name_b: str,
+) -> list[dict[str, str]]:
+    """Compare two station histories and return delta metrics.
+
+    Returns list of ``{metric, station_a, station_b, delta, winner}`` dicts.
+    """
+
+    def _avg(seq: deque) -> Optional[float]:
+        vals = [v for v in seq if v is not None]
+        return sum(vals) / len(vals) if vals else None
+
+    metrics = [
+        ("Avg Irradiance", "irradiance", "W/m²", True),    # higher is better
+        ("Avg Membrane", "membrane", "%", True),             # higher is better
+        ("Avg pH", "ph", "", None),                          # neutral
+        ("Avg Turbidity", "turbidity", "NTU", False),        # lower is better
+        ("Avg Heavy Metal", "heavy_metal", "PPM", False),    # lower is better
+        ("Avg WQI", "wqi", "", True),                        # higher is better
+    ]
+
+    rows: list[dict[str, str]] = []
+    for label, key, unit, higher_better in metrics:
+        a_val = _avg(hist_a.get(key, deque()))
+        b_val = _avg(hist_b.get(key, deque()))
+
+        a_str = f"{a_val:.2f}" if a_val is not None else "N/A"
+        b_str = f"{b_val:.2f}" if b_val is not None else "N/A"
+
+        if a_val is not None and b_val is not None:
+            delta = a_val - b_val
+            delta_str = f"{delta:+.2f} {unit}"
+            if higher_better is True:
+                winner = name_a if delta > 0 else name_b
+            elif higher_better is False:
+                winner = name_a if delta < 0 else name_b
+            else:
+                winner = "—"
+        else:
+            delta_str = "—"
+            winner = "—"
+
+        rows.append({
+            "metric": label,
+            name_a: a_str,
+            name_b: b_str,
+            "delta": delta_str,
+            "winner": winner,
+        })
+
+    return rows
+
+
 def compute_energy_efficiency(
     desal_rate: float,
     irradiance: float,

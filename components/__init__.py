@@ -15,7 +15,7 @@ from .charts import (
     render_sparkline,
     render_wqi_gauge,
 )
-from .map_view import render_deployment_map
+from .map_view import render_deployment_map, render_global_map
 from .terminal import render_graphrag_log
 
 __all__ = [
@@ -27,5 +27,6 @@ __all__ = [
     "render_sparkline",
     "render_anomaly_timeline",
     "render_deployment_map",
+    "render_global_map",
     "render_graphrag_log",
 ]

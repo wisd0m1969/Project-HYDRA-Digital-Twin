@@ -23,7 +23,10 @@ from engine import (
     GraphRAGEngine,
     STATIONS,
     build_custom_station,
+    climate_from_latitude,
     compute_wqi,
+    check_who_compliance,
+    compare_stations,
     compute_energy_efficiency,
     predict_maintenance,
     build_session_summary,
@@ -38,13 +41,16 @@ from components.charts import (
     render_sparkline,
     render_anomaly_timeline,
 )
-from components.map_view import render_deployment_map
+from components.map_view import render_deployment_map, render_global_map
 from components.terminal import render_graphrag_log
 from utils.theme import (
     GLOBAL_CSS,
     metric_card,
     countdown_card,
     summary_card,
+    who_badge,
+    alert_banner,
+    comparison_table,
     NEON_GREEN,
     NEON_RED,
     NEON_CYAN,
@@ -147,6 +153,7 @@ with hdr_right:
         st.rerun()
 
 cfg = _all_stations()[st.session_state.station]
+climate = climate_from_latitude(cfg.lat)
 
 with hdr_center:
     lat_dir = "N" if cfg.lat >= 0 else "S"
@@ -167,7 +174,8 @@ with hdr_center:
             </div>
             <div style="font-size:11px; letter-spacing:4px; color:#252540;
                         margin-top:2px;">
-                {cfg.name.upper()} DEPLOYMENT · {abs(cfg.lat):.4f}°{lat_dir}  {abs(cfg.lon):.4f}°{lon_dir}
+                {cfg.name.upper()} · {abs(cfg.lat):.4f}°{lat_dir}  {abs(cfg.lon):.4f}°{lon_dir}
+                · {climate.zone.upper()} ZONE
             </div>
         </div>
         """,
@@ -175,7 +183,7 @@ with hdr_center:
     )
 
 # ═══════════════════════════════════════════════════════════════════════════
-#  Sidebar — GraphRAG Reasoning Log + Export
+#  Sidebar — GraphRAG + Comparison + Export
 # ═══════════════════════════════════════════════════════════════════════════
 
 with st.sidebar:
@@ -209,11 +217,55 @@ with st.sidebar:
 
     _sidebar_log()
 
+    # ── Cross-Station Comparison (outside fragment) ───────────
+    st.markdown('<div style="height:16px"></div>', unsafe_allow_html=True)
+
+    compare_options = [n for n in _all_stations().keys() if n != st.session_state.station]
+    if compare_options:
+        with st.expander("Cross-Station Compare", expanded=False):
+            compare_to = st.selectbox(
+                "Compare with",
+                compare_options,
+                key="compare_station_select",
+                label_visibility="collapsed",
+            )
+            if compare_to and st.button("Compare", use_container_width=True, key="compare_btn"):
+                # Run a quick 30-tick simulation for the comparison station
+                compare_cfg = _all_stations()[compare_to]
+                compare_sim = HydraSimulator(config=compare_cfg)
+                compare_hist = {k: deque(maxlen=HISTORY_LEN) for k in _KEYS}
+                for _ in range(30):
+                    cs = compare_sim.step()
+                    compare_hist["irradiance"].append(cs.helios.solar_irradiance_wm2)
+                    compare_hist["desal"].append(cs.helios.desalination_rate_lhr)
+                    compare_hist["membrane"].append(cs.aegis.membrane_integrity_pct)
+                    compare_hist["biofouling"].append(cs.aegis.biofouling_risk_pct)
+                    compare_hist["ph"].append(cs.sentinel.ph_level)
+                    compare_hist["turbidity"].append(cs.sentinel.turbidity_ntu)
+                    compare_hist["heavy_metal"].append(cs.sentinel.heavy_metal_ppm)
+                    sc, _, _ = compute_wqi(
+                        cs.sentinel.ph_level, cs.sentinel.turbidity_ntu,
+                        cs.sentinel.heavy_metal_ppm,
+                    )
+                    compare_hist["wqi"].append(sc)
+                    compare_hist["efficiency"].append(
+                        compute_energy_efficiency(
+                            cs.helios.desalination_rate_lhr,
+                            cs.helios.solar_irradiance_wm2,
+                        )
+                    )
+
+                rows = compare_stations(
+                    st.session_state.hist, compare_hist,
+                    st.session_state.station, compare_to,
+                )
+                st.markdown(
+                    comparison_table(rows, st.session_state.station, compare_to),
+                    unsafe_allow_html=True,
+                )
+
     # ── Export & Summary (static, outside fragment) ──────────
-    st.markdown(
-        '<div style="height:16px"></div>',
-        unsafe_allow_html=True,
-    )
+    st.markdown('<div style="height:16px"></div>', unsafe_allow_html=True)
 
     stats = build_session_summary(
         st.session_state.hist,
@@ -282,14 +334,40 @@ def _telemetry() -> None:
 
     maint_ticks, maint_slope, maint_intercept = predict_maintenance(h["membrane"])
 
-    # ── 4. Render: WQI Gauge (full width) ──────────────────
-    st.plotly_chart(
-        render_wqi_gauge(wqi_score, wqi_grade, wqi_color),
-        use_container_width=True,
-        config={"displayModeBar": False},
+    who_status, who_details = check_who_compliance(
+        s.ph_level, s.turbidity_ntu, s.heavy_metal_ppm,
     )
 
-    # ── 4. Render: Metric Cards (utils.theme) ─────────────
+    # ── 4a. Render: Alert Banner ──────────────────────────
+    # Aggregate recent anomalies into summary
+    recent = list(st.session_state.anomaly_events)
+    alert_summary: dict[str, tuple] = {}  # type -> (severity, count)
+    for evt in recent[-50:]:  # last 50 events
+        typ, sev = evt[1], evt[2]
+        if typ in alert_summary:
+            old_sev, old_cnt = alert_summary[typ]
+            alert_summary[typ] = (max(old_sev, sev), old_cnt + 1)
+        else:
+            alert_summary[typ] = (sev, 1)
+
+    critical_alerts = [
+        (typ, sev, cnt) for typ, (sev, cnt) in alert_summary.items() if sev >= 2
+    ]
+    critical_alerts.sort(key=lambda x: (-x[1], -x[2]))
+    st.markdown(alert_banner(critical_alerts[:5]), unsafe_allow_html=True)
+
+    # ── 4b. Render: WQI + WHO Badge ──────────────────────
+    wqi_col, who_col = st.columns([3, 1])
+    with wqi_col:
+        st.plotly_chart(
+            render_wqi_gauge(wqi_score, wqi_grade, wqi_color),
+            use_container_width=True,
+            config={"displayModeBar": False},
+        )
+    with who_col:
+        st.markdown(who_badge(who_status, who_details), unsafe_allow_html=True)
+
+    # ── 4c. Render: Metric Cards (utils.theme) ────────────
     c = st.columns(6)
 
     with c[0]:
@@ -337,7 +415,7 @@ def _telemetry() -> None:
             unsafe_allow_html=True,
         )
 
-    # ── 4. Render: Energy Efficiency + Maintenance ─────────
+    # ── 4d. Render: Energy Efficiency + Maintenance ────────
     st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
     eff_col, spark_col, maint_col = st.columns([1, 1, 1])
 
@@ -371,7 +449,7 @@ def _telemetry() -> None:
 
     st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
 
-    # ── 4. Render: Subsystem Gauges (components.charts) ───
+    # ── 4e. Render: Subsystem Gauges (components.charts) ──
     gc1, gc2, gc3 = st.columns(3)
 
     with gc1:
@@ -528,3 +606,48 @@ st.plotly_chart(
     config={"displayModeBar": False},
 )
 st.markdown("</div>", unsafe_allow_html=True)
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  Global Station Overview (renders once — all stations on one map)
+# ═══════════════════════════════════════════════════════════════════════════
+
+all_station_data = _all_stations()
+if len(all_station_data) > 1:
+    st.markdown(
+        '<div class="section-header">🌍 Global Station Overview</div>',
+        unsafe_allow_html=True,
+    )
+
+    # Collect WQI snapshots for each station (quick 5-tick sample)
+    global_markers = []
+    for sname, scfg in all_station_data.items():
+        if sname == st.session_state.station:
+            # Use live WQI from current session
+            wqi_vals = [v for v in st.session_state.hist.get("wqi", deque()) if v is not None]
+            wqi_avg = sum(wqi_vals) / len(wqi_vals) if wqi_vals else 50.0
+        else:
+            # Quick snapshot simulation
+            snap_sim = HydraSimulator(config=scfg)
+            snap_scores = []
+            for _ in range(5):
+                snap_state = snap_sim.step()
+                sc, _, _ = compute_wqi(
+                    snap_state.sentinel.ph_level,
+                    snap_state.sentinel.turbidity_ntu,
+                    snap_state.sentinel.heavy_metal_ppm,
+                )
+                snap_scores.append(sc)
+            wqi_avg = sum(snap_scores) / len(snap_scores)
+
+        global_markers.append({
+            "name": sname,
+            "lat": scfg.lat,
+            "lon": scfg.lon,
+            "wqi_score": wqi_avg,
+        })
+
+    st.plotly_chart(
+        render_global_map(global_markers, active_name=st.session_state.station),
+        use_container_width=True,
+        config={"displayModeBar": False},
+    )
