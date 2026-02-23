@@ -140,6 +140,30 @@ Deploy custom stations at any coordinates via the **"+ Add Station"** panel. Irr
 
 ---
 
+## 🛣️ Roadmap to Physical Reality
+
+We are actively transitioning from this software simulation to physical atoms.
+
+| Phase | Milestone | Status |
+|-------|-----------|--------|
+| **Phase 1** | PROMETHEUS GraphRAG Discovery (14k+ Nodes) | ✅ Complete |
+| **Phase 2** | Level-6 Deterministic Digital Twin Simulation (This Repo) | ✅ Complete |
+| **Phase 3** | ESP32 Hardware IoT Integration (Replacing simulated arrays with live sensor data) | 🔄 In Progress |
+| **Phase 4** | Lab Prototyping of Graphene Aerogel & AEGIS Membranes | 📋 Planned |
+| **Phase 5** | Field Pilot Deployment (Doi Inthanon, Thailand) | 📋 Planned |
+
+---
+
+## 🤝 Call for Partners
+
+We are seeking **$500k in philanthropic grants** and partnerships with materials science laboratories to build the physical prototype. If you are a VC, an NGO, or a Deep-Tech engineer passionate about open-source solutions for humanity, let's connect.
+
+📧 **Contact:** [Founder@prometheus-agi.tech](mailto:Founder@prometheus-agi.tech)
+
+🌐 **Main Engine:** [prometheus-agi.tech](https://prometheus-agi.tech)
+
+---
+
 ## 📜 License
 
 This work is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
