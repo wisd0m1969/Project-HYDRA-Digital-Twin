@@ -35,6 +35,32 @@ Project HYDRA was not invented by human engineers alone. It was autonomously syn
 
 ---
 
+## 🖥️ Dashboard Preview
+
+<div align="center">
+
+<img src="assets/dashboard-preview.png" alt="Project HYDRA — Mission Control Dashboard" width="100%">
+
+*Project HYDRA Mission Control — Doi Inthanon Station (18.5883°N, 98.4861°E) · Tropical Zone*
+
+</div>
+
+**What you're seeing:**
+
+| Area | Component | Description |
+|------|-----------|-------------|
+| **Top Left** | 🔴 GraphRAG Reasoning Console | Live-scrolling AI decision log — PROMETHEUS traverses 14,000+ knowledge graph nodes in real time, issuing autonomous commands like membrane activation and sensor recalibration |
+| **Top Center** | 🟡 Active Alerts Banner | Severity-coded notification strip showing active anomalies across all subsystems (Membrane degradation, pH anomaly, biofouling, sensor faults) |
+| **Center** | 🟢 Water Quality Index (WQI) | Composite score **86/100 (Grade B)** — weighted blend of pH, turbidity, and heavy metal readings with 5-zone color gauge |
+| **Top Right** | 🔴 WHO Compliance Badge | Real-time **NON-COMPLIANT** status against WHO drinking water guidelines (pH 6.5–8.5, Turbidity < 1 NTU, Heavy Metals < 0.01 PPM) |
+| **Center Row** | 📊 Telemetry Metrics | Live readings — Solar Irradiance (254 W/m²), pH (1.94), Turbidity (75.6 NTU), Biofouling (24.0%), Heavy Metals (7.04 PPM), Desalination Rate (3.23 L/hr) |
+| **Mid Left** | ⚡ Energy Efficiency | **7.62 L/kWh** with sparkline trend visualization |
+| **Mid Right** | 🔧 Predictive Maintenance | OLS regression-based membrane degradation forecast with **MAINTENANCE NOW** warning |
+| **Bottom** | 📈 Subsystem Gauges | Three real-time gauges — **HELIOS** solar core (252.0 W/m²), **AEGIS** bio-defense membrane (75.1%), **SENTINEL** pH level (6.90) with time-series charts |
+| **Bottom Left** | 🔀 Cross-Station Comparison | Side-by-side delta analysis between any two deployed stations |
+
+---
+
 ## 🏛️ System Architecture: The Three Layers
 
 HYDRA operates completely off-grid, utilizing a triad of advanced technologies:
