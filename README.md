@@ -6,6 +6,7 @@
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Online-success?style=for-the-badge&logo=streamlit)](https://project-hydra-digital-twin-cfmvqcczaxvzibtedim7k5.streamlit.app/)
 [![License: CC BY-SA 4.0](https://img.shields.io/badge/License-CC_BY--SA_4.0-lightgrey.svg?style=for-the-badge)](https://creativecommons.org/licenses/by-sa/4.0/)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue?style=for-the-badge&logo=python)](https://www.python.org/)
+[![Release](https://img.shields.io/github/v/release/wisd0m1969/Project-HYDRA-Digital-Twin?style=for-the-badge&color=ff0055)](https://github.com/wisd0m1969/Project-HYDRA-Digital-Twin/releases/tag/v1.0.0)
 
 *From In-Silico AI Discovery to Mission-Critical Reality.*
 
@@ -17,6 +18,20 @@
 
 ## 🌍 The Genesis: Discovered by PROMETHEUS AGI
 Project HYDRA was not invented by human engineers alone. It was autonomously synthesized by **PROMETHEUS**, our proprietary GraphRAG engine that maps over 14,000+ global patents and scientific papers. By traversing cross-domain knowledge graphs, the AI discovered an unpatented "Missing Link" combining *Materials Science*, *Biotechnology*, and *IoT Diagnostics* to solve **UN SDG 6 (Clean Water & Sanitation)**.
+
+---
+
+## 🎬 Live Demo Video
+
+<div align="center">
+
+[![Watch Demo](https://img.shields.io/badge/▶_Watch_Demo-Mission_Control_Walkthrough-ff0055?style=for-the-badge&logo=youtube)](https://github.com/wisd0m1969/Project-HYDRA-Digital-Twin/releases/download/v1.0.0/HYDRA-Dashboard-Demo.mov)
+
+**[📥 Download Full Video (27 MB .mov)](https://github.com/wisd0m1969/Project-HYDRA-Digital-Twin/releases/download/v1.0.0/HYDRA-Dashboard-Demo.mov)** · **[📦 Release Page](https://github.com/wisd0m1969/Project-HYDRA-Digital-Twin/releases/tag/v1.0.0)**
+
+</div>
+
+> Watch Project HYDRA's Mission Control in action — real-time 1 Hz telemetry streaming across three subsystems (HELIOS solar core, AEGIS bio-defense membrane, SENTINEL IoT sensors), GraphRAG autonomous reasoning console, Water Quality Index scoring, WHO compliance monitoring, predictive maintenance forecasting, and global multi-station deployment with climate-aware simulation across 5 zones from the Equator to the Poles. All running on a deterministic, zero-side-effect engine with cyberpunk Vantablack/Neon aesthetics.
 
 ---
 
