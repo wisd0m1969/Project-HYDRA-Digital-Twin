@@ -103,7 +103,9 @@ Project-HYDRA-Digital-Twin/
 git clone https://github.com/wisd0m1969/Project-HYDRA-Digital-Twin.git
 cd Project-HYDRA-Digital-Twin
 
-# Install dependencies
+# Create a virtual environment & install dependencies
+python3 -m venv venv
+source venv/bin/activate  # On Windows use: venv\Scripts\activate
 pip install -r requirements.txt
 
 # Run
