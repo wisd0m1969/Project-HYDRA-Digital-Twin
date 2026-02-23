@@ -22,6 +22,7 @@ from engine import (
     HydraSimulator,
     GraphRAGEngine,
     STATIONS,
+    build_custom_station,
     compute_wqi,
     compute_energy_efficiency,
     predict_maintenance,
@@ -80,9 +81,15 @@ _KEYS = [
 ]
 
 
+def _all_stations() -> dict:
+    """Merge preset stations with user-created custom stations."""
+    custom = st.session_state.get("custom_stations", {})
+    return {**STATIONS, **custom}
+
+
 def _init_session(station_name: str = "Doi Inthanon") -> None:
     """Initialise or reset all session state for a given station."""
-    cfg = STATIONS[station_name]
+    cfg = _all_stations()[station_name]
     st.session_state.station = station_name
     st.session_state.sim = HydraSimulator(config=cfg)
     st.session_state.rag = GraphRAGEngine(seed=cfg.seed + 57)
@@ -92,6 +99,8 @@ def _init_session(station_name: str = "Doi Inthanon") -> None:
     st.session_state.anomaly_count = 0
 
 
+if "custom_stations" not in st.session_state:
+    st.session_state.custom_stations = {}
 if "sim" not in st.session_state:
     _init_session()
 
@@ -99,10 +108,33 @@ if "sim" not in st.session_state:
 #  Static Header (renders once — outside all fragments)
 # ═══════════════════════════════════════════════════════════════════════════
 
-# ── Station selector (outside fragment) ─────────────────────────
+# ── Station selector + Custom station form (outside fragment) ───
 hdr_left, hdr_center, hdr_right = st.columns([1, 3, 1])
+
+with hdr_left:
+    with st.expander("+ Add Station", expanded=False):
+        custom_name = st.text_input(
+            "Name (optional)", value="", key="custom_name_input",
+        )
+        custom_lat = st.number_input(
+            "Latitude", value=0.0, min_value=-90.0, max_value=90.0,
+            step=0.01, format="%.4f", key="custom_lat_input",
+        )
+        custom_lon = st.number_input(
+            "Longitude", value=0.0, min_value=-180.0, max_value=180.0,
+            step=0.01, format="%.4f", key="custom_lon_input",
+        )
+        if st.button("Deploy Station", use_container_width=True):
+            new_cfg = build_custom_station(
+                lat=custom_lat, lon=custom_lon, name=custom_name,
+            )
+            st.session_state.custom_stations[new_cfg.name] = new_cfg
+            _init_session(new_cfg.name)
+            st.rerun()
+
 with hdr_right:
-    station_names = list(STATIONS.keys())
+    all_st = _all_stations()
+    station_names = list(all_st.keys())
     current_idx = station_names.index(st.session_state.station)
     selected = st.selectbox(
         "Station",
@@ -114,9 +146,11 @@ with hdr_right:
         _init_session(selected)
         st.rerun()
 
-cfg = STATIONS[st.session_state.station]
+cfg = _all_stations()[st.session_state.station]
 
 with hdr_center:
+    lat_dir = "N" if cfg.lat >= 0 else "S"
+    lon_dir = "E" if cfg.lon >= 0 else "W"
     st.markdown(
         f"""
         <div style="text-align:center; padding:8px 0 24px 0;">
@@ -133,7 +167,7 @@ with hdr_center:
             </div>
             <div style="font-size:11px; letter-spacing:4px; color:#252540;
                         margin-top:2px;">
-                {cfg.name.upper()} DEPLOYMENT · {cfg.lat:.4f}°N  {cfg.lon:.4f}°E
+                {cfg.name.upper()} DEPLOYMENT · {abs(cfg.lat):.4f}°{lat_dir}  {abs(cfg.lon):.4f}°{lon_dir}
             </div>
         </div>
         """,
@@ -477,8 +511,9 @@ _telemetry()
 #  Static Deployment Map (renders once — zero fragment overhead)
 # ═══════════════════════════════════════════════════════════════════════════
 
+_map_label = f"{cfg.name}, Thailand" if cfg.name in STATIONS else cfg.name
 st.markdown(
-    f'<div class="section-header">🗺 Deployment — {cfg.name}, Thailand</div>',
+    f'<div class="section-header">🗺 Deployment — {_map_label}</div>',
     unsafe_allow_html=True,
 )
 st.markdown('<div class="hydra-map-pulse">', unsafe_allow_html=True)

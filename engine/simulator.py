@@ -10,6 +10,7 @@ state-transition function:  (tick_n) → HydraState_n+1.
 
 from __future__ import annotations
 
+import hashlib
 import math
 import random
 from dataclasses import dataclass
@@ -47,6 +48,54 @@ STATIONS: dict[str, StationConfig] = {
         irradiance_base=680.0, membrane_base=88.0,
     ),
 }
+
+
+# ── Custom Station Factory ────────────────────────────────────────────────
+
+
+def seed_from_coordinates(lat: float, lon: float) -> int:
+    """Deterministic 32-bit seed from lat/lon via SHA-256."""
+    key = f"{lat:.6f},{lon:.6f}"
+    return int(hashlib.sha256(key.encode()).hexdigest()[:8], 16)
+
+
+def irradiance_base_from_latitude(lat: float) -> float:
+    """Estimate baseline solar irradiance from latitude (cosine model).
+
+    Range [400, 800] W/m².  Equator=800, poles=400.
+    """
+    return 400.0 + 400.0 * math.cos(math.radians(abs(lat)))
+
+
+def membrane_base_from_latitude(lat: float) -> float:
+    """Estimate membrane baseline from latitude.
+
+    Range [77, 90]%.  Accounts for biofouling pressure in warm climates.
+    """
+    return 80.0 + 10.0 * (1.0 - 0.3 * math.cos(math.radians(abs(lat))))
+
+
+def build_custom_station(
+    lat: float,
+    lon: float,
+    name: str = "",
+) -> StationConfig:
+    """Create a StationConfig from user-supplied coordinates.
+
+    Pure function: ``(lat, lon, name?) → StationConfig``.
+    Seed and base parameters are derived deterministically from coordinates.
+    """
+    if not name:
+        name = f"Custom ({lat:.2f}, {lon:.2f})"
+    return StationConfig(
+        name=name,
+        seed=seed_from_coordinates(lat, lon),
+        lat=lat,
+        lon=lon,
+        altitude_m=0,
+        irradiance_base=irradiance_base_from_latitude(lat),
+        membrane_base=membrane_base_from_latitude(lat),
+    )
 
 
 class HydraSimulator:

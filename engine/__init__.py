@@ -8,12 +8,13 @@ from .analytics import (
     predict_maintenance,
 )
 from .graphrag import GraphRAGEngine
-from .simulator import STATIONS, HydraSimulator, StationConfig
+from .simulator import STATIONS, HydraSimulator, StationConfig, build_custom_station
 
 __all__ = [
     "HydraSimulator",
     "StationConfig",
     "STATIONS",
+    "build_custom_station",
     "GraphRAGEngine",
     "compute_wqi",
     "compute_energy_efficiency",
