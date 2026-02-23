@@ -108,7 +108,7 @@ python3 -m venv venv
 source venv/bin/activate  # On Windows use: venv\Scripts\activate
 pip install -r requirements.txt
 
-# Run
+# Ignite the Dashboard
 streamlit run app.py
 ```
 
