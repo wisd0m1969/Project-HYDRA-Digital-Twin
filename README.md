@@ -61,6 +61,34 @@ Project HYDRA was not invented by human engineers alone. It was autonomously syn
 
 ---
 
+## 🖨️ 3D Printable Prototype — From Digital to Physical
+
+<div align="center">
+
+<img src="assets/hydra-3d-blueprint.png" alt="HYDRA 3D Printable Blueprint — Water Purification Prototype" width="60%">
+
+*HYDRA 3D Blueprint — Parametric CAD Model (OpenSCAD)*
+
+</div>
+
+> **🇹🇭 สามารถสั่งปริ้น 3D ได้จริง!** โมเดลนี้ถูกออกแบบใน OpenSCAD ในรูปแบบ Parametric CAD ที่สามารถ Export เป็นไฟล์ `.STL` เพื่อนำไปสั่งพิมพ์ 3D ได้ทันที — เหมาะสำหรับการนำไปต่อยอด, สร้าง Prototype, หรือใช้เป็นแบบจำลองทางกายภาพเพื่อการศึกษาและการพัฒนาในขั้นถัดไป
+
+**Key Features of the 3D Blueprint:**
+- 📐 **Parametric Design** — Fully customizable dimensions via OpenSCAD variables
+- 🏭 **3D Print Ready** — Export to `.STL` for FDM/SLA/SLS 3D printing
+- 🔩 **Accurate Geometry** — Includes base with 6 coolant ports, ribbed cylindrical body with 30 reinforcement rings, and parabolic dome with mesh grid
+- 🧪 **Real-World Prototyping** — Physical models can be used for fit testing, flow simulation mockups, and stakeholder demonstrations
+
+```bash
+# Open the blueprint in OpenSCAD
+openscad hydra_blueprint.scad
+
+# Export to STL for 3D printing
+openscad -o hydra_prototype.stl hydra_blueprint.scad
+```
+
+---
+
 ## 🏛️ System Architecture: The Three Layers
 
 HYDRA operates completely off-grid, utilizing a triad of advanced technologies:
@@ -113,6 +141,8 @@ This Streamlit application acts as the Mission Control Center for HYDRA units de
 ```
 Project-HYDRA-Digital-Twin/
 ├── app.py                    # Pure UI renderer (zero business logic)
+├── hydra_blueprint.scad      # 3D Printable CAD model (OpenSCAD)
+├── hydra_formal_cad.py       # Parametric CAD generator script
 ├── core/
 │   └── models.py             # Frozen dataclasses with physics clamping
 ├── engine/
@@ -125,6 +155,9 @@ Project-HYDRA-Digital-Twin/
 │   └── terminal.py           # XSS-safe GraphRAG log renderer
 ├── utils/
 │   └── theme.py              # Vantablack/Neon CSS, metric cards, badges, banners
+├── assets/
+│   ├── dashboard-preview.png # Dashboard screenshot
+│   └── hydra-3d-blueprint.png # 3D blueprint promotional image
 ├── requirements.txt          # streamlit>=1.37.0, plotly>=5.18.0
 └── feature.json              # Feature matrix manifest
 ```
