@@ -71,7 +71,7 @@ Project HYDRA was not invented by human engineers alone. It was autonomously syn
 
 </div>
 
-> **🇹🇭 สามารถสั่งปริ้น 3D ได้จริง!** โมเดลนี้ถูกออกแบบใน OpenSCAD ในรูปแบบ Parametric CAD ที่สามารถ Export เป็นไฟล์ `.STL` เพื่อนำไปสั่งพิมพ์ 3D ได้ทันที — เหมาะสำหรับการนำไปต่อยอด, สร้าง Prototype, หรือใช้เป็นแบบจำลองทางกายภาพเพื่อการศึกษาและการพัฒนาในขั้นถัดไป
+> **🖨️ Ready for 3D Printing!** This model is designed in OpenSCAD as a fully parametric CAD blueprint that can be exported to `.STL` for immediate 3D printing — perfect for building real-world prototypes, conducting physical fit tests, or creating tangible demonstration models for stakeholders and further R&D development.
 
 **Key Features of the 3D Blueprint:**
 - 📐 **Parametric Design** — Fully customizable dimensions via OpenSCAD variables
