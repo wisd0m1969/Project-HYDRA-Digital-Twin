@@ -63,29 +63,95 @@ Project HYDRA was not invented by human engineers alone. It was autonomously syn
 
 ## 🖨️ 3D Printable Prototype — From Digital to Physical
 
+[![Download STL](https://img.shields.io/badge/Download-STL_File_(4.0_MB)-00cc66?style=for-the-badge&logo=threedotjs)](https://github.com/wisd0m1969/Project-HYDRA-Digital-Twin/raw/main/hydra_blueprint.stl)
+[![OpenSCAD Source](https://img.shields.io/badge/Source-OpenSCAD_Blueprint-0088ff?style=for-the-badge&logo=opensourceinitiative)](https://github.com/wisd0m1969/Project-HYDRA-Digital-Twin/blob/main/hydra_blueprint.scad)
+
 <div align="center">
 
-<img src="assets/hydra-3d-blueprint.png" alt="HYDRA 3D Printable Blueprint — Water Purification Prototype" width="60%">
+<img src="assets/hydra-3d-hero.png" alt="HYDRA 3D Printable Prototype — Water Purification System Ready for Physical Manufacturing" width="70%">
 
-*HYDRA 3D Blueprint — Parametric CAD Model (OpenSCAD)*
+*HYDRA 3D Printable Prototype — Parametric CAD Model designed in OpenSCAD, ready for immediate STL export and 3D printing*
 
 </div>
 
-> **🖨️ Ready for 3D Printing!** This model is designed in OpenSCAD as a fully parametric CAD blueprint that can be exported to `.STL` for immediate 3D printing — perfect for building real-world prototypes, conducting physical fit tests, or creating tangible demonstration models for stakeholders and further R&D development.
+> **🖨️ Ready for Real-World Manufacturing!** Project HYDRA has crossed the boundary from pure simulation into **physically buildable hardware**. This fully parametric OpenSCAD model can be exported to `.STL` and sent directly to any FDM, SLA, or SLS 3D printer — enabling teams worldwide to build tangible prototypes, conduct fit testing, validate flow paths, and create demonstration units for investors, NGOs, and government partners. The blueprint is **fully open-source** under CC BY-SA 4.0.
 
-**Key Features of the 3D Blueprint:**
-- 📐 **Parametric Design** — Fully customizable dimensions via OpenSCAD variables
-- 🏭 **3D Print Ready** — Export to `.STL` for FDM/SLA/SLS 3D printing
-- 🔩 **Accurate Geometry** — Includes base with 6 coolant ports, ribbed cylindrical body with 30 reinforcement rings, and parabolic dome with mesh grid
-- 🧪 **Real-World Prototyping** — Physical models can be used for fit testing, flow simulation mockups, and stakeholder demonstrations
+---
+
+### 🏗️ Exploded View — Three-Layer Architecture
+
+<div align="center">
+
+<img src="assets/hydra-3d-exploded.png" alt="HYDRA Exploded View — Base Plate, Cylindrical Body, Parabolic Dome" width="65%">
+
+*Exploded view diagram mapping directly to HYDRA's three subsystem layers: HELIOS → AEGIS → SENTINEL*
+
+</div>
+
+The 3D blueprint mirrors the exact same layered architecture as the Digital Twin simulation:
+
+| Layer | 3D Component | Subsystem | Physical Function |
+|-------|-------------|-----------|-------------------|
+| **🔵 Base** | Circular plate with 6 radial coolant ports | ☀️ **HELIOS** | Water intake manifold — distributes raw water to solar purification channels |
+| **🟡 Body** | Ribbed cylinder with 30 reinforcement rings | 🦠 **AEGIS** | Bio-defense membrane housing — structural support for nanobiocatalytic filtration layers |
+| **🔴 Dome** | Parabolic cap with mesh grid filter | 💧 **SENTINEL** | Sensor dome — houses IoT biosensors for real-time output water quality monitoring |
+
+---
+
+### 📋 Technical Specifications
+
+| Parameter | Value |
+|-----------|-------|
+| **CAD Format** | OpenSCAD (`.scad`) — Fully Parametric |
+| **Export Format** | `.STL` (4.0 MB, watertight mesh) |
+| **Overall Height** | ~208 mm (Base 60mm + Body 120mm + Dome 28mm) |
+| **Base Diameter** | 160 mm (80mm radius) |
+| **Body Diameter** | 140 mm (70mm radius) |
+| **Coolant Ports** | 6× radial holes, 20mm diameter, evenly spaced at 60° |
+| **Reinforcement Rings** | 30× horizontal ribs, 1.5mm protrusion, 4mm spacing |
+| **Dome Type** | Parabolic curve with 18-spoke radial grid + 7 concentric rings |
+| **Recommended Print** | FDM (PLA/PETG) at 0.2mm layer height, ~12-16 hours |
+| **Scale** | 1:1 prototype or scale down for desktop demonstration |
+
+---
+
+### 🎯 Real-World Applications
+
+<div align="center">
+
+<img src="assets/hydra-3d-applications.png" alt="HYDRA 3D Prototype Use Cases — Fit Testing, Flow Simulation, Stakeholder Demo, R&D" width="75%">
+
+*Four immediate use cases for the 3D printed HYDRA prototype*
+
+</div>
+
+| Use Case | Description |
+|----------|-------------|
+| 🔧 **Physical Fit Testing** | Validate component dimensions, port alignments, and assembly tolerances before committing to metal fabrication |
+| 🌊 **Flow Simulation Mockups** | Use transparent filament (PETG) to visualize internal water flow paths and identify potential dead zones |
+| 🎤 **Stakeholder Demonstrations** | Hand investors, NGO partners, and government officials a tangible model they can hold and inspect during pitches |
+| 🔬 **R&D Development** | Rapid iteration on geometry — modify OpenSCAD parameters, re-export, and print overnight for next-day testing |
+
+---
+
+### ⚡ Quick Build Guide
 
 ```bash
-# Open the blueprint in OpenSCAD
+# Clone the repository
+git clone https://github.com/wisd0m1969/Project-HYDRA-Digital-Twin.git
+cd Project-HYDRA-Digital-Twin
+
+# Option 1: Open in OpenSCAD GUI (modify parameters visually)
 openscad hydra_blueprint.scad
 
-# Export to STL for 3D printing
+# Option 2: Export directly to STL for 3D printing
 openscad -o hydra_prototype.stl hydra_blueprint.scad
+
+# Option 3: Download pre-built STL (4.0 MB, ready to slice)
+# → https://github.com/wisd0m1969/Project-HYDRA-Digital-Twin/raw/main/hydra_blueprint.stl
 ```
+
+> **💡 Tip:** The `.stl` file is already included in this repository — you can download it directly from the [Releases page](https://github.com/wisd0m1969/Project-HYDRA-Digital-Twin/releases) or clone the repo. No OpenSCAD installation required if you just want to print!
 
 ---
 
@@ -156,8 +222,11 @@ Project-HYDRA-Digital-Twin/
 ├── utils/
 │   └── theme.py              # Vantablack/Neon CSS, metric cards, badges, banners
 ├── assets/
-│   ├── dashboard-preview.png # Dashboard screenshot
-│   └── hydra-3d-blueprint.png # 3D blueprint promotional image
+│   ├── dashboard-preview.png  # Dashboard screenshot
+│   ├── hydra-3d-hero.png      # 3D prototype hero promotional image
+│   ├── hydra-3d-exploded.png  # Exploded view — 3 layer architecture
+│   ├── hydra-3d-applications.png # 4 use-case infographic
+│   └── hydra-3d-blueprint.png # Original 3D blueprint render
 ├── requirements.txt          # streamlit>=1.37.0, plotly>=5.18.0
 └── feature.json              # Feature matrix manifest
 ```

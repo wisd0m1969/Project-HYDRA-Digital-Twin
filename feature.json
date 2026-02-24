@@ -59,6 +59,15 @@
       "description": "Fragment-based zero-flicker streaming with strict data flow.",
       "status": "complete",
       "validation": "Two @st.fragment(run_every=1s): telemetry + sidebar. Static header and map outside fragments. Unidirectional flow: engine.step() → HydraState → history.append() → components.render(). Pure UI renderer — zero business logic in app.py."
+    },
+    {
+      "id": "CAD-01",
+      "name": "3D Printable CAD Blueprint (OpenSCAD)",
+      "module": "hydra_blueprint.scad",
+      "complexity": "High",
+      "description": "Fully parametric 3D model for physical prototyping, flow simulation, stakeholder demonstrations, and R&D development. Exportable to STL for FDM/SLA/SLS 3D printing.",
+      "status": "complete",
+      "validation": "407-line OpenSCAD blueprint with 3-layer architecture: base (6 coolant ports at 60° spacing), ribbed body (30 reinforcement rings), parabolic dome (18 radial spokes + 7 concentric rings). Exported 4.0 MB watertight STL mesh. Dimensions validated against CAD spec: 160mm base Ø, 140mm body Ø, 208mm total height."
     }
   ]
 }
